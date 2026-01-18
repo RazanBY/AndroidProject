@@ -17,6 +17,8 @@ class LoginScreen extends StatelessWidget {
               width: 140,
             ),
             const SizedBox(height: 40),
+
+            // Email
             TextField(
               decoration: InputDecoration(
                 hintText: 'Email',
@@ -29,6 +31,8 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
+            // Password
             TextField(
               obscureText: true,
               decoration: InputDecoration(
@@ -41,13 +45,40 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 24),
+
+            // Login Button
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {},
-                child: const Text('Login'),
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/home');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4DE1D6),
+                ),
+                child: const Text(
+                  'Login',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Register Button
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/register');
+              },
+              child: const Text(
+                "Don’t have an account? Register",
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
               ),
             ),
           ],

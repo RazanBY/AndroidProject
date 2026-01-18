@@ -10,16 +10,16 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   final String sentence = "Fast Clean Shine";
-  List<String> words = [];
+  late List<String> words;
   int currentWordIndex = 0;
 
   @override
   void initState() {
     super.initState();
+
     words = sentence.split(" ");
 
-    // انتظار 2 ثانية
-    Future.delayed(const Duration(seconds: 2), startTyping);
+    startTyping();
   }
 
   void startTyping() {
@@ -31,8 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
       } else {
         timer.cancel();
 
-        // بعد انتهاء الكلمات ننتظر 3 ثواني وننتقل
-        Future.delayed(const Duration(seconds: 3), () {
+        Future.delayed(const Duration(seconds: 1), () {
           Navigator.pushReplacementNamed(context, '/login');
         });
       }
