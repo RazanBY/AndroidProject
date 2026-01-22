@@ -9,10 +9,13 @@ import 'location_screen.dart';
 import 'summary_screen.dart';
 import 'add_car_screen.dart';
 import 'schedule_screen.dart';
+import 'my_orders_screen.dart';
+import 'wallet_screen.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -33,6 +36,10 @@ class MyApp extends StatelessWidget {
         '/summary': (context) => const SummaryScreen(),
         '/addcar': (context) => const AddCarScreen(),
         '/schedule': (context) => const ScheduleScreen(),
+        '/orders': (context) => const MyOrdersScreen(),
+        '/wallet': (context) => const WalletScreen(),
+
+
 
       },
     );

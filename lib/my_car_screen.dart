@@ -40,39 +40,6 @@ class _MyCarScreenState extends State<MyCarScreen> {
     await prefs.setStringList('cars', cars);
   }
 
-  void _addCar() {
-    final controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Add Car'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Car name / plate'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                setState(() {
-                  cars.add(controller.text);
-                });
-                _saveCars();
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Add'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,7 +51,17 @@ class _MyCarScreenState extends State<MyCarScreen> {
       floatingActionButton: isSelectMode
           ? null
           : FloatingActionButton(
-              onPressed: _addCar,
+              onPressed: () async {
+                final newCar =
+                    await Navigator.pushNamed(context, '/addcar');
+
+                if (newCar != null && newCar is String) {
+                  setState(() {
+                    cars.add(newCar);
+                  });
+                  _saveCars();
+                }
+              },
               child: const Icon(Icons.add),
             ),
 
@@ -110,51 +87,35 @@ class _MyCarScreenState extends State<MyCarScreen> {
           : ListView.builder(
               itemCount: cars.length,
               itemBuilder: (context, index) {
-                return Dismissible(
-                  key: ValueKey(cars[index]),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  onDismissed: (_) {
-                    setState(() {
-                      cars.removeAt(index);
-                    });
-                    _saveCars();
-                  },
-                  child: ListTile(
-                    leading: const Icon(Icons.directions_car),
-                    title: Text(cars[index]),
-                    trailing: isSelectMode
-                        ? Radio<String>(
-                            value: cars[index],
-                            groupValue: selectedCar,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedCar = value;
-                              });
-                            },
-                          )
-                        : IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              setState(() {
-                                cars.removeAt(index);
-                              });
-                              _saveCars();
-                            },
-                          ),
-                    onTap: isSelectMode
-                        ? () {
+                return ListTile(
+                  leading: const Icon(Icons.directions_car),
+                  title: Text(cars[index]),
+                  trailing: isSelectMode
+                      ? Radio<String>(
+                          value: cars[index],
+                          groupValue: selectedCar,
+                          onChanged: (value) {
                             setState(() {
-                              selectedCar = cars[index];
+                              selectedCar = value;
                             });
-                          }
-                        : null,
-                  ),
+                          },
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            setState(() {
+                              cars.removeAt(index);
+                            });
+                            _saveCars();
+                          },
+                        ),
+                  onTap: isSelectMode
+                      ? () {
+                          setState(() {
+                            selectedCar = cars[index];
+                          });
+                        }
+                      : null,
                 );
               },
             ),
