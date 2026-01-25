@@ -5,8 +5,11 @@ require("dotenv").config();
 // Import routes
 const authRoutes = require("./routes/authRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
-const employeeRoutes = require("./routes/employeeRoutes");
-
+const serviceRoutes = require("./routes/serviceRoutes"); // أضف هذا السطر
+const teamRoutes = require("./routes/teamRoutes");
+const carRoutes = require("./routes/carRoutes");
+const walletRoutes = require("./routes/walletRoutes");
+const userRoutes = require("./routes/userRoutes");
 const app = express();
 
 // Middleware
@@ -22,7 +25,7 @@ app.get("/", (req, res) => {
     endpoints: {
       auth: "/api/auth",
       bookings: "/api/bookings",
-      employee: "/api/employee",
+      services: "/api/services", // أضف هذا السطر
     },
   });
 });
@@ -30,8 +33,12 @@ app.get("/", (req, res) => {
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
-app.use("/api/employee", employeeRoutes);
-
+app.use("/api/services", serviceRoutes); // أضف هذا السطر
+app.use("/api/teams", teamRoutes);
+app.use("/api/cars", carRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/users", userRoutes);
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -39,6 +46,7 @@ app.use((req, res) => {
   });
 });
 
+// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
