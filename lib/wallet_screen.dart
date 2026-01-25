@@ -49,7 +49,6 @@ class _WalletScreenState extends State<WalletScreen> {
     }
   }
 
-  /// 🔁 يتحدث تلقائيًا كل مرة تدخل الصفحة
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();

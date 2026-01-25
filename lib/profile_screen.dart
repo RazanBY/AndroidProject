@@ -25,7 +25,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _fetchProfile();
   }
 
-  // 🔹 جلب بيانات البروفايل
   Future<void> _fetchProfile() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -67,7 +66,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // logout
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear(); 

@@ -24,8 +24,7 @@ class SummaryScreen extends StatelessWidget {
     try {
       final walletRes = await http.get(
         Uri.parse(
-          'https://l1x9zzdh-5000.euw.devtunnels.ms/api/wallet/balance',
-        ),
+            'https://l1x9zzdh-5000.euw.devtunnels.ms/api/wallet/balance'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -37,42 +36,14 @@ class SummaryScreen extends StatelessWidget {
 
       if (balance < price) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('رصيد المحفظة غير كافي'),
-          ),
+          const SnackBar(content: Text('رصيد المحفظة غير كافي')),
         );
         return;
       }
 
-      final payRes = await http.post(
-        Uri.parse(
-          'https://l1x9zzdh-5000.euw.devtunnels.ms/api/wallet/pay',
-        ),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode({
-          "amount": price,
-        }),
-      );
-
-      final payData = json.decode(payRes.body);
-
-      if (payRes.statusCode != 200 || payData['success'] != true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('فشل الدفع من المحفظة'),
-          ),
-        );
-        return;
-      }
-
-      /// 3️⃣ إنشاء الحجز بعد نجاح الدفع
       final bookingRes = await http.post(
         Uri.parse(
-          'https://l1x9zzdh-5000.euw.devtunnels.ms/api/bookings/create',
-        ),
+            'https://l1x9zzdh-5000.euw.devtunnels.ms/api/bookings/create'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -80,8 +51,8 @@ class SummaryScreen extends StatelessWidget {
         body: json.encode({
           "car_id": int.parse(args['car_id'].toString()),
           "service_id": int.parse(args['service_id'].toString()),
-          "booking_date": args['booking_date'].toString(),
-          "location": args['location'].toString(),
+          "booking_date": args['booking_date'],
+          "location": args['location'],
           "lat": double.parse(args['lat'].toString()),
           "lng": double.parse(args['lng'].toString()),
         }),
@@ -92,19 +63,38 @@ class SummaryScreen extends StatelessWidget {
       if (bookingRes.statusCode != 200 ||
           bookingData['success'] != true) {
         ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('فشل إنشاء الطلب')),
+        );
+        return;
+      }
+
+      final int bookingId = bookingData['bookingId'];
+
+      final payRes = await http.post(
+        Uri.parse(
+            'https://l1x9zzdh-5000.euw.devtunnels.ms/api/wallet/pay'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          "booking_id": bookingId,
+        }),
+      );
+
+      if (payRes.statusCode != 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('تم الخصم لكن فشل إنشاء الحجز (راجع الباك)'),
+            content: Text('تم إنشاء الحجز لكن فشل الدفع'),
           ),
         );
         return;
       }
 
-      /// 4️⃣ نجاح كامل
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
-              Text('تم تأكيد الطلب وخصم $price ₪ بنجاح'),
+              Text('تم تأكيد الطلب وخصم $price ₪ من المحفظة'),
         ),
       );
 
@@ -115,9 +105,7 @@ class SummaryScreen extends StatelessWidget {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('حدث خطأ غير متوقع'),
-        ),
+        const SnackBar(content: Text('حدث خطأ غير متوقع')),
       );
     }
   }

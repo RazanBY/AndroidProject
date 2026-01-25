@@ -69,7 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
             Image.asset('assets/logo.png', width: 140),
             const SizedBox(height: 40),
 
-            // Email
             TextField(
               controller: emailController,
               decoration: InputDecoration(
@@ -84,7 +83,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Password
             TextField(
               controller: passwordController,
               obscureText: true,
@@ -101,7 +99,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 24),
 
-            // Login Button
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -121,7 +118,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 16),
 
-            // Register Button
             TextButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/register');
