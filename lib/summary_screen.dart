@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SummaryScreen extends StatelessWidget {
   const SummaryScreen({super.key});
@@ -32,7 +34,6 @@ class SummaryScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            /// السعر
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -44,17 +45,12 @@ class SummaryScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Total Price',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     '\$ $price',
                     style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -62,13 +58,43 @@ class SummaryScreen extends StatelessWidget {
 
             const Spacer(),
 
-            /// Confirm
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  /// مؤقتًا نرجع على الهوم
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+
+                  int balance =
+                      (prefs.get('balance') as num?)?.toInt() ?? 100;
+
+                  if (balance < price) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Insufficient balance'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  balance -= price;
+                  await prefs.setInt('balance', balance);
+
+                  List<String> orders =
+                      prefs.getStringList('orders') ?? [];
+
+                  orders.add(json.encode({
+                    'wash': wash,
+                    'car': car,
+                    'date': date,
+                    'time': time,
+                    'location': location,
+                    'price': price,
+                    'status': 'Pending',
+                  }));
+
+                  await prefs.setStringList('orders', orders);
+
                   Navigator.popUntil(
                     context,
                     ModalRoute.withName('/home'),
@@ -92,16 +118,11 @@ class SummaryScreen extends StatelessWidget {
   Widget _summaryCard(String title, String value, IconData icon) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
       child: ListTile(
         leading: Icon(icon, color: const Color(0xFF3B0A8F)),
         title: Text(title),
-        subtitle: Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        subtitle:
+            Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }

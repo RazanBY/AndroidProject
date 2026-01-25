@@ -17,8 +17,8 @@ class HomeScreen extends StatelessWidget {
 
             _menuButton(context, "My Cars", Icons.directions_car, '/mycar'),
             _menuButton(context, "Book a Wash", Icons.calendar_month, '/wash'),
-            _menuButton(context, "Wallet", Icons.account_balance_wallet, ''),
-            _menuButton(context, "My Orders", Icons.list_alt, ''),
+            _menuButton(context, "Wallet", Icons.account_balance_wallet, '/wallet'),
+            _menuButton(context, "My Orders", Icons.list_alt, '/orders'),
           ],
         ),
       ),
