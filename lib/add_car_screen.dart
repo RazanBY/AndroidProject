@@ -47,15 +47,23 @@ class _AddCarScreenState extends State<AddCarScreen> {
       );
 
       final data = jsonDecode(response.body);
+      print('Response: ${response.statusCode}, Body: $data');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Car added successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pop(context, true);
       } else {
         throw data['message'] ?? 'Failed to add car';
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
     } finally {
       setState(() => isLoading = false);
     }
@@ -68,13 +76,18 @@ class _AddCarScreenState extends State<AddCarScreen> {
         title: const Text('Add Car'),
         backgroundColor: const Color(0xFF3B0A8F),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height - 200,
+          ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 20),
               
+              // Car Model
               TextField(
                 controller: carModelController,
                 decoration: const InputDecoration(
@@ -82,11 +95,13 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   hintText: 'e.g., تويوتا كامري 2020',
                   prefixIcon: Icon(Icons.directions_car),
                   border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
               
               const SizedBox(height: 16),
               
+              // Plate Number
               TextField(
                 controller: plateNumberController,
                 decoration: const InputDecoration(
@@ -94,11 +109,13 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   hintText: 'e.g., ABC-123',
                   prefixIcon: Icon(Icons.confirmation_number),
                   border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
               
               const SizedBox(height: 16),
               
+              // Color (optional)
               TextField(
                 controller: colorController,
                 decoration: const InputDecoration(
@@ -106,11 +123,13 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   hintText: 'e.g., أبيض',
                   prefixIcon: Icon(Icons.color_lens),
                   border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
               
-              const Spacer(),
+              const SizedBox(height: 40), // بدل Spacer
               
+              // Save Button
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -118,12 +137,25 @@ class _AddCarScreenState extends State<AddCarScreen> {
                   onPressed: isLoading ? null : _addCar,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4DE1D6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            color: Colors.white,
+                          ),
+                        )
                       : const Text(
                           'Save Car',
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),
