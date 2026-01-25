@@ -169,3 +169,4 @@ The app expects the following REST API endpoints:
 - Confirmation dialogs for important actions
 
 
+

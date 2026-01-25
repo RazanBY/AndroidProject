@@ -90,6 +90,7 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
     );
 
     if (confirm == true) {
+      await ApiService.clearToken();
       await StorageService.logout();
       if (mounted) {
         Navigator.pushAndRemoveUntil(
@@ -317,5 +318,6 @@ class _EmployeeDashboardScreenState extends State<EmployeeDashboardScreen> {
     );
   }
 }
+
 
 
