@@ -74,7 +74,9 @@ class StorageService {
     await prefs.remove(_keyEmployeeEmail);
     await prefs.remove(_keyEmployeePhone);
     await prefs.remove(_keyTeamId);
+    await prefs.remove('token');
   }
 }
+
 
 

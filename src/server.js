@@ -5,6 +5,7 @@ require("dotenv").config();
 // Import routes
 const authRoutes = require("./routes/authRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const employeeRoutes = require("./routes/employeeRoutes");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
     endpoints: {
       auth: "/api/auth",
       bookings: "/api/bookings",
+      employee: "/api/employee",
     },
   });
 });
@@ -28,6 +30,7 @@ app.get("/", (req, res) => {
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/employee", employeeRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

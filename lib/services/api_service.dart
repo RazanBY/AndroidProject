@@ -1,18 +1,42 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/job_model.dart';
 import '../models/employee_model.dart';
 
 class ApiService {
   // API base URL
-  static const String baseUrl = 'https://l1x9zzdh-5000.euw.devtunnels.ms/api/employee';
+  static const String baseUrl = 'https://l1x9zzdh-5000.euw.devtunnels.ms';
+  static const String employeeBaseUrl = '$baseUrl/api/employee';
+  static const String authBaseUrl = '$baseUrl/api/auth';
 
-  // Login employee
+  // Get stored token
+  static Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  // Save token
+  static Future<void> _saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
+
+  // Get headers with token
+  static Future<Map<String, String>> _getHeaders() async {
+    final token = await _getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  // Login employee (uses /api/auth/login)
   static Future<Map<String, dynamic>> loginEmployee(
       String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/login'),
+        Uri.parse('$authBaseUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
@@ -21,11 +45,28 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['token'] != null) {
+          await _saveToken(data['token']);
+          // Return employee data in expected format
+          return {
+            'success': true,
+            'employee': {
+              'id': data['user']['id'].toString(),
+              'name': data['user']['name'],
+              'email': data['user']['email'],
+              'phone': data['user']['phone'],
+              'teamId': data['user']['team_id']?.toString(),
+            },
+            'message': data['message'] ?? 'Login successful',
+          };
+        }
+        return data;
       } else {
+        final errorData = jsonDecode(response.body);
         return {
           'success': false,
-          'message': 'Login failed: ${response.statusCode}',
+          'message': errorData['message'] ?? 'Login failed: ${response.statusCode}',
         };
       }
     } catch (e) {
@@ -39,9 +80,10 @@ class ApiService {
   // Get assigned jobs for employee
   static Future<List<Job>> getAssignedJobs(String employeeId) async {
     try {
+      final headers = await _getHeaders();
       final response = await http.get(
-        Uri.parse('$baseUrl/jobs?employeeId=$employeeId'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('$employeeBaseUrl/jobs'),
+        headers: headers,
       );
 
       if (response.statusCode == 200) {
@@ -61,12 +103,12 @@ class ApiService {
   static Future<Map<String, dynamic>> updateJobStatus(
       String jobId, String employeeId, String status) async {
     try {
+      final headers = await _getHeaders();
       final response = await http.post(
-        Uri.parse('$baseUrl/updateJobStatus'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('$employeeBaseUrl/updateJobStatus'),
+        headers: headers,
         body: jsonEncode({
           'jobId': jobId,
-          'employeeId': employeeId,
           'status': status,
         }),
       );
@@ -74,9 +116,10 @@ class ApiService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
+        final errorData = jsonDecode(response.body);
         return {
           'success': false,
-          'message': 'Update failed: ${response.statusCode}',
+          'message': errorData['message'] ?? 'Update failed: ${response.statusCode}',
         };
       }
     } catch (e) {
@@ -90,9 +133,10 @@ class ApiService {
   // Get employee profile
   static Future<Employee?> getEmployeeProfile(String employeeId) async {
     try {
+      final headers = await _getHeaders();
       final response = await http.get(
-        Uri.parse('$baseUrl/profile?employeeId=$employeeId'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('$employeeBaseUrl/profile'),
+        headers: headers,
       );
 
       if (response.statusCode == 200) {
@@ -111,12 +155,12 @@ class ApiService {
   static Future<Map<String, dynamic>> completeJob(
       String jobId, String employeeId, String completionDate, String completionTime) async {
     try {
+      final headers = await _getHeaders();
       final response = await http.post(
-        Uri.parse('$baseUrl/completeJob'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('$employeeBaseUrl/completeJob'),
+        headers: headers,
         body: jsonEncode({
           'jobId': jobId,
-          'employeeId': employeeId,
           'completionDate': completionDate,
           'completionTime': completionTime,
         }),
@@ -125,9 +169,10 @@ class ApiService {
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
+        final errorData = jsonDecode(response.body);
         return {
           'success': false,
-          'message': 'Completion failed: ${response.statusCode}',
+          'message': errorData['message'] ?? 'Completion failed: ${response.statusCode}',
         };
       }
     } catch (e) {
@@ -136,6 +181,12 @@ class ApiService {
         'message': 'Network error: $e',
       };
     }
+  }
+
+  // Clear token on logout
+  static Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
   }
 }
 

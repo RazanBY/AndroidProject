@@ -480,3 +480,4 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
 }
 
 
+
