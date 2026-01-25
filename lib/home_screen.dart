@@ -7,13 +7,27 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF3B0A8F),
+
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF3B0A8F),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person, size: 28),
+            onPressed: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+          ),
+        ],
+      ),
+
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const SizedBox(height: 40),
-            Image.asset('assets/logo.png', width: 120),
             const SizedBox(height: 20),
+            Image.asset('assets/logo.png', width: 120),
+            const SizedBox(height: 30),
 
             _menuButton(context, "My Cars", Icons.directions_car, '/mycar'),
             _menuButton(context, "Book a Wash", Icons.calendar_month, '/wash'),
@@ -25,11 +39,16 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _menuButton(BuildContext context, String title, IconData icon, String route) {
+  Widget _menuButton(
+    BuildContext context,
+    String title,
+    IconData icon,
+    String route,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: ElevatedButton(
-        onPressed: route.isEmpty ? null : () {
+        onPressed: () {
           Navigator.pushNamed(context, route);
         },
         style: ElevatedButton.styleFrom(
@@ -43,7 +62,10 @@ class HomeScreen extends StatelessWidget {
           children: [
             Icon(icon, size: 32, color: Colors.black),
             const SizedBox(width: 20),
-            Text(title, style: const TextStyle(fontSize: 18, color: Colors.black)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 18, color: Colors.black),
+            ),
           ],
         ),
       ),

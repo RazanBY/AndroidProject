@@ -18,12 +18,12 @@ class _LocationScreenState extends State<LocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final data =
+    final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Location'),
+        title: const Text('Location'),
         backgroundColor: const Color(0xFF3B0A8F),
       ),
       body: Padding(
@@ -31,21 +31,18 @@ class _LocationScreenState extends State<LocationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Wash: ${data['wash']}'),
-            Text('Car: ${data['car']}'),
-            Text('Date: ${data['date']}'),
-            Text('Time: ${data['time']}'),
+            Text('Service: ${args['service_name']}'),
+            Text('Car: ${args['car_name']}'),
+            Text('Date: ${args['booking_date']}'),
 
             const SizedBox(height: 20),
 
             TextField(
               controller: locationController,
-              decoration: InputDecoration(
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
                 hintText: 'Enter location',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.location_on),
+                border: OutlineInputBorder(),
               ),
             ),
 
@@ -55,26 +52,21 @@ class _LocationScreenState extends State<LocationScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  if (locationController.text.isNotEmpty) {
-                    Navigator.pushNamed(
-                      context,
-                      '/summary',
-                      arguments: {
-                        'wash': data['wash'],
-                        'car': data['car'],
-                        'date': data['date'],
-                        'time': data['time'],
-                        'location': locationController.text,
-                        'price': data['price'],
+                onPressed: locationController.text.trim().isEmpty
+                    ? null
+                    : () {
+                        Navigator.pushNamed(
+                          context,
+                          '/summary',
+                          arguments: {
+                            ...args,
+                            'location': locationController.text.trim(),
+                            'lat': 31.902556,
+                            'lng': 35.206209,
+                          },
+                        );
                       },
-                    );
-                  }
-                },
-                child: const Text(
-                  'Confirm',
-                  style: TextStyle(fontSize: 18),
-                ),
+                child: const Text('Next'),
               ),
             ),
           ],

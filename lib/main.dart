@@ -11,6 +11,7 @@ import 'add_car_screen.dart';
 import 'schedule_screen.dart';
 import 'my_orders_screen.dart';
 import 'wallet_screen.dart';
+import 'profile_screen.dart';
 import 'employee/employee_login_screen.dart';
 import 'employee/employee_dashboard_screen.dart';
 import 'employee/job_details_screen.dart';
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
         '/schedule': (context) => const ScheduleScreen(),
         '/orders': (context) => const MyOrdersScreen(),
         '/wallet': (context) => const WalletScreen(),
+        '/profile': (context) => const ProfileScreen(),
 
 
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'my_car_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -9,22 +9,13 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  DateTime? selectedDate;
-  TimeOfDay? selectedTime;
-
-  String get formattedDate {
-    if (selectedDate == null) return 'Select date';
-    return DateFormat('yyyy-MM-dd').format(selectedDate!);
-  }
-
-  String get formattedTime {
-    if (selectedTime == null) return 'Select time';
-    return selectedTime!.format(context);
-  }
+  DateTime selectedDate = DateTime.now();
+  TimeOfDay selectedTime = TimeOfDay.now();
+  Map<String, dynamic>? selectedCar;
 
   @override
   Widget build(BuildContext context) {
-    final data =
+    final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
     return Scaffold(
@@ -36,92 +27,87 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            /// Date
-            ListTile(
-              leading: const Icon(Icons.calendar_today),
-              title: const Text('Date'),
-              subtitle: Text(formattedDate),
-              onTap: () async {
-                final picked = await showDatePicker(
+            ElevatedButton(
+              onPressed: () async {
+                final car = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MyCarScreen()),
+                );
+                if (car != null) {
+                  setState(() {
+                    selectedCar = Map<String, dynamic>.from(car);
+                  });
+                }
+              },
+              child: Text(
+                selectedCar == null
+                    ? 'Select Car'
+                    : selectedCar!['car_name'].toString(),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: () async {
+                final date = await showDatePicker(
                   context: context,
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 30)),
-                  initialDate: DateTime.now(),
+                  initialDate: selectedDate,
                 );
-
-                if (picked != null) {
-                  setState(() {
-                    selectedDate = picked;
-                  });
+                if (date != null) {
+                  setState(() => selectedDate = date);
                 }
               },
+              child: const Text('Select Date'),
             ),
 
-            const Divider(),
-
-            /// Time
-            ListTile(
-              leading: const Icon(Icons.access_time),
-              title: const Text('Time'),
-              subtitle: Text(formattedTime),
-              onTap: () async {
-                final picked = await showTimePicker(
+            ElevatedButton(
+              onPressed: () async {
+                final time = await showTimePicker(
                   context: context,
-                  initialTime: TimeOfDay.now(),
+                  initialTime: selectedTime,
                 );
-
-                if (picked != null) {
-                  setState(() {
-                    selectedTime = picked;
-                  });
+                if (time != null) {
+                  setState(() => selectedTime = time);
                 }
               },
+              child: const Text('Select Time'),
             ),
 
             const Spacer(),
 
-            /// Next
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: selectedDate == null || selectedTime == null
-                    ? null
-                    : () {
-                        Navigator.pushNamed(
-                          context,
-                          '/location',
-                          arguments: {
-                            'wash': data['wash'],
-                            'car': data['car'],
-                            'date': formattedDate,
-                            'time': formattedTime,
-                            'price': _getPrice(data['wash']),
-                          },
-                        );
-                      },
-                child: const Text(
-                  'Next',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
+            ElevatedButton(
+              onPressed: selectedCar == null
+                  ? null
+                  : () {
+                      final bookingDate =
+                          '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')} '
+                          '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}:00';
+
+                      Navigator.pushNamed(
+                        context,
+                        '/location',
+                        arguments: {
+                          'service_id':
+                              int.parse(args['service_id'].toString()),
+                          'service_name': args['service_name'].toString(),
+                          'price':
+                              double.parse(args['price'].toString()), // ⭐ مهم
+                          'car_id': int.parse(
+                              selectedCar!['car_id'].toString()), // ⭐ مهم
+                          'car_name':
+                              selectedCar!['car_name'].toString(),
+                          'booking_date': bookingDate,
+                        },
+                      );
+                    },
+              child: const Text('Continue'),
             ),
           ],
         ),
       ),
     );
-  }
-
-  int _getPrice(String wash) {
-    switch (wash) {
-      case 'Basic Wash':
-        return 10;
-      case 'Premium Wash':
-        return 20;
-      case 'Full Service':
-        return 30;
-      default:
-        return 0;
-    }
   }
 }

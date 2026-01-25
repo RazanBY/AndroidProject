@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class WashScreen extends StatefulWidget {
   const WashScreen({super.key});
@@ -8,76 +10,62 @@ class WashScreen extends StatefulWidget {
 }
 
 class _WashScreenState extends State<WashScreen> {
-  String? selectedWash;
+  List services = [];
+  bool loading = true;
+
+  Future<void> fetchServices() async {
+    final res = await http.get(
+      Uri.parse('https://l1x9zzdh-5000.euw.devtunnels.ms/api/services'),
+    );
+
+    final data = json.decode(res.body);
+
+    setState(() {
+      services = data['services'];
+      loading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchServices();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Car Wash'),
+        title: const Text('Services'),
         backgroundColor: const Color(0xFF3B0A8F),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _washOption('Basic Wash', '10 \$'),
-            _washOption('Premium Wash', '20 \$'),
-            _washOption('Full Service', '30 \$'),
-            const Spacer(),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: services.length,
+              itemBuilder: (context, index) {
+                final service = services[index];
 
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: selectedWash == null
-                    ? null
-                    : () async {
-                        final selectedCar = await Navigator.pushNamed(
-                          context,
-                          '/mycar',
-                          arguments: {'select': true},
-                        );
+                return Card(
+                  child: ListTile(
+                    title: Text(service['name']),
+                    subtitle: Text('${service['price']} ₪'),
+                    onTap: () {
+  Navigator.pushNamed(
+    context,
+    '/schedule',
+    arguments: {
+      'service_id': service['id'],
+      'service_name': service['name'],
+      'price': service['price'],
+    },
+  );
+}
 
-                        if (selectedCar != null) {
-                          Navigator.pushNamed(
-                            context,
-                            '/schedule',
-                            arguments: {
-                              'wash': selectedWash,
-                              'car': selectedCar,
-                            },
-                          );
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4DE1D6),
-                ),
-                child: const Text(
-                  'Next',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
+                  ),
+                );
+              },
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _washOption(String title, String price) {
-    return Card(
-      child: RadioListTile<String>(
-        value: title,
-        groupValue: selectedWash,
-        onChanged: (value) {
-          setState(() {
-            selectedWash = value;
-          });
-        },
-        title: Text(title),
-        subtitle: Text(price),
-      ),
     );
   }
 }

@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MyCarScreen extends StatefulWidget {
@@ -9,35 +11,32 @@ class MyCarScreen extends StatefulWidget {
 }
 
 class _MyCarScreenState extends State<MyCarScreen> {
-  List<String> cars = [];
-  String? selectedCar;
-  bool isSelectMode = false;
+  List cars = [];
+  bool loading = true;
+
+  Future<void> fetchCars() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final res = await http.get(
+      Uri.parse('https://l1x9zzdh-5000.euw.devtunnels.ms/api/cars'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final data = json.decode(res.body);
+
+    setState(() {
+      cars = data['cars'];
+      loading = false;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadCars();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final args = ModalRoute.of(context)?.settings.arguments;
-      if (args != null && args is Map && args['select'] == true) {
-        setState(() {
-          isSelectMode = true;
-        });
-      }
-    });
-  }
-
-  Future<void> _loadCars() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      cars = prefs.getStringList('cars') ?? [];
-    });
-  }
-
-  Future<void> _saveCars() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('cars', cars);
+    fetchCars();
   }
 
   @override
@@ -47,75 +46,23 @@ class _MyCarScreenState extends State<MyCarScreen> {
         title: const Text('My Cars'),
         backgroundColor: const Color(0xFF3B0A8F),
       ),
-
-      floatingActionButton: isSelectMode
-          ? null
-          : FloatingActionButton(
-              onPressed: () async {
-                final newCar =
-                    await Navigator.pushNamed(context, '/addcar');
-
-                if (newCar != null && newCar is String) {
-                  setState(() {
-                    cars.add(newCar);
-                  });
-                  _saveCars();
-                }
-              },
-              child: const Icon(Icons.add),
-            ),
-
-      bottomNavigationBar: isSelectMode
-          ? Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: selectedCar == null
-                      ? null
-                      : () {
-                          Navigator.pop(context, selectedCar);
-                        },
-                  child: const Text('Confirm'),
-                ),
-              ),
-            )
-          : null,
-
-      body: cars.isEmpty
-          ? const Center(child: Text('No cars added'))
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
               itemCount: cars.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  leading: const Icon(Icons.directions_car),
-                  title: Text(cars[index]),
-                  trailing: isSelectMode
-                      ? Radio<String>(
-                          value: cars[index],
-                          groupValue: selectedCar,
-                          onChanged: (value) {
-                            setState(() {
-                              selectedCar = value;
-                            });
-                          },
-                        )
-                      : IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            setState(() {
-                              cars.removeAt(index);
-                            });
-                            _saveCars();
-                          },
-                        ),
-                  onTap: isSelectMode
-                      ? () {
-                          setState(() {
-                            selectedCar = cars[index];
-                          });
-                        }
-                      : null,
+                final car = cars[index];
+                return Card(
+                  child: ListTile(
+                    title: Text(car['car_model']),
+                    subtitle: Text(car['plate_number']),
+                    onTap: () {
+                      Navigator.pop(context, {
+                        'car_id': car['id'],
+                        'car_name': car['car_model'],
+                      });
+                    },
+                  ),
                 );
               },
             ),
